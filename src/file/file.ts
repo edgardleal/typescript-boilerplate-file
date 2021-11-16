@@ -108,6 +108,22 @@ export default class File {
     });
   }
 
+  async read(): Promise<string | null> {
+    const exists = await this.exists();
+    if (!exists) {
+      return null;
+    }
+    return new Promise((resolve, reject) => {
+      fs.readFile(this.filePath, 'utf8', (error: Error | null, buff: string) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(buff);
+        }
+      });
+    });
+  }
+
   async touch(): Promise<void> {
     await this.assertDir();
     return new Promise((resolve, reject) => {
