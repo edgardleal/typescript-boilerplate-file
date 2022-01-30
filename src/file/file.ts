@@ -33,9 +33,12 @@ export default class File {
     this.fileDirPath = path.dirname(this.filePath);
     if (lastIndexOfDot > 0) {
       this.fileExtension = this.filePath.substr(
-        lastIndexOfDot, this.filePath.length - lastIndexOfDot,
+        lastIndexOfDot,
+        this.filePath.length - lastIndexOfDot,
       );
-      this.name = this.filePath.replace(this.fileDirPath, '').substr(0, lastIndexOfDot - 1);
+      this.name = this.filePath
+        .replace(this.fileDirPath, '')
+        .substr(0, lastIndexOfDot - 1);
     } else {
       this.fileExtension = '';
       this.name = this.filePath.replace(this.fileDirPath, '');
@@ -108,20 +111,46 @@ export default class File {
     });
   }
 
-  async read(): Promise<string | null> {
+  async readBuffer(): Promise<Buffer | null> {
     const exists = await this.exists();
     if (!exists) {
       return null;
     }
     return new Promise((resolve, reject) => {
-      fs.readFile(this.filePath, 'utf8', (error: Error | null, buff: string) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(buff);
-        }
-      });
+      fs.readFile(
+        this.filePath,
+        { encoding: 'utf8' },
+        (error: Error | null, buff: Buffer | string) => {
+          if (error) {
+            reject(error);
+          } else if (typeof buff === 'string') {
+            resolve(Buffer.from(buff as any as string));
+          } else {
+            resolve(buff as any as Buffer);
+          }
+        },
+      );
     });
+  }
+
+  async read(): Promise<string | null> {
+    const exists = await this.exists();
+    if (!exists) {
+      return null;
+    }
+    const buff = await this.readBuffer();
+    if (buff) {
+      return buff!.toString();
+    }
+    return null;
+  }
+
+  async copyTo(file: File) {
+    const buff = await this.readBuffer();
+    if (!buff) {
+      throw new Error(`[${file.filePath}] dont exists`);
+    }
+    await file.write(buff!);
   }
 
   async touch(): Promise<void> {

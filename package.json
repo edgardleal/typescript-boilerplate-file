@@ -9,6 +9,7 @@
     "file"
   ],
   "scripts": {
+    "build": "tsc",
     "lint": "eslint src --ext ts",
     "test": "jest"
   },
@@ -29,5 +30,5 @@
     "ts-node": "^10.4.0",
     "typescript": "^3.9.7"
   },
-  "dependencies": {}
+  "dependencies": {"aws-sdk":"~2.1066.0"}
 }
